@@ -1,0 +1,2 @@
+The code in this repository is a demonstration of encrypting and decrypting shell code using AES. Encryption and decryption is done via the bcrypt.h and generating random bytes for the key and iv. Will update this 
+Project with execution of the shell code in the future.
